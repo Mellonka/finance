@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная{% endblock %}
+
+
+{% block body %}
+    <div class="lead container d-flex justify-content-between pt-4 mt-5" style="max-width: 90%;">
+        <div style="max-width: 65%">
+            <h1 class="mb-3">Веб-приложение для учёта финансов</h1>
+            <p>
+                Сайт создан для облегчения контроля денег.
+            </p>
+            <p>Для начала вам следует добавить <a class="link-primary" href="/categories">категории</a> для трат и пополнений, а также <a class="link-primary" href="/accounts">счета</a>, которыми вы пользуетесь.</p>
+        </div>
+        <img style="max-width: 210px !important; height: auto;" class="" src="{{ url_for('static', filename='images/piggy-bank.png') }}" alt>
+        <div></div>
+    </div>
+{% endblock %}

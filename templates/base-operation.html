@@ -1,0 +1,140 @@
+{% extends 'base-pages.html' %}
+
+
+{% block content %}
+    <div class="d-flex controllers gap-3 mb-5">
+        <button class="btn btn-primary mb-3 delete">Удалить выбранные записи</button>
+        <button class="btn btn-danger mb-3 cancel-update d-none">Отменить редактирование</button>
+    </div>
+    <div class="d-flex gap-4 justify-content-between">
+
+        {#            <form method="post" class="list-group border p-4 w-50 create">#}
+        {#                <h2 class="mb-3 text-center">Операция</h2>#}
+        {##}
+        {#                <b><label class="mb-2" for="date">Дата</label></b>#}
+        {#                <input type="date" name="date" id="date" class="form-control"#}
+        {#                       value="{{ today.isoformat() }}"><br>#}
+        {##}
+        {#                <b><label class="mb-2" for="category">Категория</label></b>#}
+        {#                <select required name="category" id="category" class="form-control">#}
+        {#                    {% for category in categories %}#}
+        {#                        <option value="{{ category.name }}">{{ category.name }}</option>#}
+        {#                    {% endfor %}#}
+        {#                </select><br>#}
+        {##}
+        {#                <b><label class="mb-2" for="account">Счёт</label></b>#}
+        {#                <select required name="account" id="account" class="form-control">#}
+        {#                    {% for account in accounts %}#}
+        {#                        <option value="{{ account.name }}">{{ account.name }}</option>#}
+        {#                    {% endfor %}#}
+        {#                </select><br>#}
+        {##}
+        {#                <b><label class="mb-2" for="amount">Сумма</label></b>#}
+        {#                <input autocomplete="off" type="text" name="amount" id="amount" class="form-control"><br>#}
+        {##}
+        {#                <b><label class="mb-2" for="notice">Примечание</label></b>#}
+        {#                <textarea name="notice" id="notice" class="form-control"></textarea><br>#}
+        {##}
+        {#<button class="btn btn-success sub">Добавить</button>#}
+        {#                <input type="submit" class="btn btn-success submit" value="Добавить">#}
+        {#            </form>#}
+
+        <table class="table table-striped">
+            <thead>
+            <tr class="align-middle">
+                <th style="width: 20px"><input style="width: 16px; height: 16px" type="checkbox"></th>
+                <th>№</th>
+                <th>Дата</th>
+                <th>Категория</th>
+                <th>Счёт</th>
+                <th>Сумма</th>
+                <th>Примечание</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="align-middle create">
+                <td></td>
+                <td><b></b></td>
+                <td class="ps-0"><input type="date" name="date" id="date" class="form-control"
+                                        value="{{ today.isoformat() }}"></td>
+                <td class="ps-0">
+                    <select required name="category" id="category" class="form-control">
+                        {% for category in categories %}
+                            <option value="{{ category.Category.name }}">{{ category.Category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td class="ps-0">
+                    <select required name="account" id="account" class="form-control">
+                        {% for account in accounts %}
+                            <option value="{{ account.Account.name }}">{{ account.Account.name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td class="ps-0"><input autocomplete="off" type="text" name="amount" id="amount"
+                                        class="form-control amount"></td>
+                <td class="ps-0 w-25"><input type="text" id="notice" name="notice" class="form-control"></td>
+                <td>
+                    <button class="btn btn-primary create"><b>+</b></button>
+                </td>
+            </tr>
+            <tr class="align-middle update">
+                <td></td>
+                <td class="id"><b></b></td>
+                <td class="ps-0"><input type="date" name="date" id="date" class="date form-control "
+                                        value="{{ today.isoformat() }}"></td>
+                <td class="ps-0">
+                    <select required name="category" id="category" class="category form-control ">
+                        {% for category in categories %}
+                            <option value="{{ category.Category.name }}">{{ category.Category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td class="ps-0">
+                    <select required name="account" id="account" class="account form-control">
+                        {% for account in accounts %}
+                            <option value="{{ account.Account.name }}">{{ account.Account.name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td class="ps-0"><input type="text" name="amount" id="amount"
+                                        class="amount form-control ">
+                </td>
+                <td class="ps-0 w-25"><input type="text" id="notice" name="notice" class=" notice form-control ">
+                </td>
+                <td class="">
+                    <button class="btn update btn-success"><b>✓</b></button>
+                </td>
+            </tr>
+            {% for el in elements %}
+                <tr class="align-middle">
+                    <td class="checkbox"><input data-id="{{ el.id }}" style="width: 16px; height: 16px;"
+                                                       type="checkbox"></td>
+                    <td class="id record"><b>{{ el.id }}</b></td>
+                    <td class="date record">{{ el.date.strftime('%d %B %Y') }}</td>
+                    <td class="category record">{{ el.category_name }}</td>
+                    <td class="account record">{{ el.account_name }}</td>
+
+                    {% if el.sign == 1 %}
+                        <td class="amount record" style="color: green">+{{ "{:.02f}".format(el.amount) }}</td>
+                    {% else %}
+                        <td class="amount record" style="color: red">-{{ "{:.02f}".format(el.amount) }}</td>
+                    {% endif %}
+
+                    <td class="notice record">{{ el.notice }}</td>
+                    <td class="update p-0 " style="width: 30px !important;">
+                        <button class="update btn">
+                            <img style="width: 30px; height: 30px;"
+                                 src="{{ url_for('static', filename='svges/edit.svg') }}" alt>
+                        </button>
+                    </td>
+                </tr>
+                </tbody>
+            {% endfor %}
+        </table>
+    </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts/operation.js') }}"></script>
+{% endblock %}

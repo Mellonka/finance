@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+
+
+{% block body %}
+    <div class="py-3 mb-2 container" style="">
+        <div class="px-4 my-5 text-center border-bottom">
+            <h1 class="display-4 fw-bold">{% block title %}{% endblock %}</h1>
+            <div class="col-lg-6 mx-auto">
+                <p class="lead mb-4">
+                    {% block lead_text %}{% endblock %}
+                </p>
+            </div>
+        </div>
+        <div>
+            {% with messages = get_flashed_messages(with_categories=true) -%}
+                {% for category, message in messages -%}
+                    {% if category == 'error' -%}
+                        {% set alert_class = 'alert-danger' -%}
+                    {% elif category == 'success' -%}
+                        {% set alert_class = 'alert-success' -%}
+                    {% else %}
+                        {% set alert_class = 'alert-info' %}
+                    {% endif -%}
+                    <div class="alert {{ alert_class }} alert-dismissible mb-3" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor -%}
+            {% endwith -%}
+        </div>
+    </div>
+    {% block content %}{% endblock %}
+{% endblock %}

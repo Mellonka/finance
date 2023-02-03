@@ -1,0 +1,98 @@
+{% extends 'base-pages.html' %}
+
+
+{% block title %}Категории{% endblock %}
+{% block lead_text %}Категории для трат и пополнений{% endblock %}
+
+{% block content %}
+    <div class="d-flex controllers gap-5 mb-3 justify-content-center align-items-start">
+        {#        <div class="d-flex flex-column">#}
+        {#            <button class="btn btn-primary mb-3 unactive">Показать неактивные счета</button>#}
+        {#            <button class="btn btn-primary mb-3 unactive d-none">Показать активные счета</button>#}
+        {#            <button class="btn btn-primary mb-3 unactive">Показать все счета</button>#}
+        {#        </div>#}
+        {#        <div class="d-flex flex-column">#}
+        {#            <button class="btn btn-primary mb-3 do-unactive">Деактивировать выбранные счета</button>#}
+        {#            <button class="btn btn-primary mb-3 do-unactive">Активировать выбранные счета</button>#}
+        {#        </div>#}
+        {#        <button class="btn btn-primary mb-3 delete flex-start">Удалить выбранные счета</button>#}
+
+        <button class="btn btn-danger mb-3 cancel-update d-none">Отменить редактирование</button>
+    </div>
+    <div class="d-flex flex-wrap justify-content-center my-5" style="gap: 80px !important;">
+        <div style="min-width: 400px !important;">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th style="width: 20px"><input style="width: 16px; height: 16px;" type="checkbox"></th>
+                    <th>№</th>
+                    <th>Категория</th>
+                    <th class="w-25">Для трат</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for el in categories %}
+                    <tr class="align-middle">
+                        <td class="checkbox"><input data-id="{{ el.id }}" style="width: 16px; height: 16px;"
+                                                    type="checkbox"></td>
+                        <td class="id">{{ el.id }}</td>
+                        <td class="name">{{ el.name }}</td>
+                        {% if el.for_expenses %}
+                            <td class="for-expenses">Да</td>
+                        {% else %}
+                            <td class="for-expenses">Нет</td>
+                        {% endif %}
+                        <td class="p-0" style="width: 35px">
+                            <button class="update btn p-0">
+                                <img style="width: 30px; height: 30px;"
+                                     src="{{ url_for('static', filename='svges/edit.svg') }}" alt>
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <form method="post" class="create list-group border p-4">
+            <h2 class="mb-5 text-center">Добавление категории</h2>
+
+            <label class="list-group-item d-flex gap-2">
+                <input class="form-check-input flex-shrink-0" type="checkbox" name="for_expenses" id="for_expenses"
+                       value=""
+                       checked>
+                <span>Эта категория для трат? <small
+                        class="d-block text-muted">Если эта категория для пополнений то галочку не ставить!</small></span>
+            </label><br>
+
+            <b><label class="mb-2" for="name">Категория</label></b>
+            <input autocomplete="off" type="text" name="name" id="name" class="form-control"><br>
+
+            <input type="submit" class="btn btn-success" value="Добавить">
+        </form>
+
+        <form method="post" class="update list-group border p-4 d-none">
+            <h2 class="mb-5 text-center">Редактирование</h2>
+
+            <b><label class="d-none" for="id">ID</label></b>
+            <input class="id d-none" type="text" id="id" name="id"><br>
+
+            <label class="list-group-item d-flex gap-2">
+                <input class="for-expenses form-check-input flex-shrink-0" type="checkbox" name="for_expenses"
+                       id="for_expenses"
+                       value=""
+                       checked>
+                <span>Эта категория для трат? <small
+                        class="d-block text-muted">Если эта категория для пополнений то галочку не ставить!</small></span>
+            </label><br>
+
+            <b><label class="mb-2" for="name">Категория</label></b>
+            <input autocomplete="off" type="text" name="name" id="name" class="name form-control"><br>
+
+            <input type="submit" class="btn btn-success" value="Обновить">
+        </form>
+        <script src="{{ url_for('static', filename='scripts/category.js') }}"></script>
+
+    </div>
+{% endblock %}
