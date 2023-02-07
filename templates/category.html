@@ -24,7 +24,7 @@
             <table class="table table-striped">
                 <thead>
                 <tr>
-                    <th style="width: 20px"><input style="width: 16px; height: 16px;" type="checkbox"></th>
+{#                    <th style="width: 20px"><input style="width: 16px; height: 16px;" type="checkbox"></th>#}
                     <th>№</th>
                     <th>Категория</th>
                     <th class="w-25">Для трат</th>
@@ -34,10 +34,10 @@
                 <tbody>
                 {% for el in categories %}
                     <tr class="align-middle">
-                        <td class="checkbox"><input data-id="{{ el.id }}" style="width: 16px; height: 16px;"
-                                                    type="checkbox"></td>
+{#                        <td class="checkbox"><input data-id="{{ el.id }}" style="width: 16px; height: 16px;"#}
+{#                                                    type="checkbox"></td>#}
                         <td class="id">{{ el.id }}</td>
-                        <td class="name">{{ el.name }}</td>
+                        <td class="name">{{ el.name|capitalize }}</td>
                         {% if el.for_expenses %}
                             <td class="for-expenses">Да</td>
                         {% else %}

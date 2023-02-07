@@ -12,8 +12,9 @@ def main_page():
 
 def record_post(model):
     data = json.loads(request.data.decode())
-    category = db.session.execute(db.select(Category).filter_by(name=data['category'])).scalar()
-    account = db.session.execute(db.select(Account).filter_by(name=data['account'])).scalar()
+
+    category = db.session.execute(db.select(Category).filter_by(name=data['category'].lower())).scalar()
+    account = db.session.execute(db.select(Account).filter_by(name=data['account'].lower())).scalar()
     amount = float(data['amount'])
     account.balance += amount * model.sign
     record = model(
@@ -35,7 +36,10 @@ def record_post(model):
 
 def record_update(model):
     data = json.loads(request.data.decode())
+    data['account'] = data['account'].lower()
+    data['category'] = data['category'].lower()
     record = db.session.execute(db.select(model).filter_by(id=data['id'])).scalar()
+
     amount = float(data['amount'])
     if record.account.name != data['account']:
         record.account.balance -= record.amount * model.sign
@@ -63,6 +67,8 @@ def record_delete(model):
     count = 0
     try:
         session.pop('_flashes', None)
+        if len(ids) == 0:
+            raise Exception
         records = db.session.execute(db.select(model).filter(model.id.in_(ids))).scalars()
         for record in records:
             record.account.balance -= record.amount * model.sign
@@ -79,10 +85,27 @@ def record_delete(model):
 
 
 def record_get(model, template_name):
-    today = datetime.date.today()
     categories = db.session.execute(db.select(Category).filter_by(for_expenses=bool(model.sign - 1))).all()
     accounts = db.session.execute(db.select(Account)).all()
-    records = db.session.execute(db.select(model).order_by(db.desc(model.id)).limit(50)).scalars()
+    today = datetime.date.today()
+    if 'categories' in request.args:
+        categories_ids = json.loads(request.args['categories'])
+        categories_names = [i[0] for i in db.session.execute(db.select(Category.name).filter(Category.id.in_(categories_ids)))]
+        accounts_ids = json.loads(request.args['accounts'])
+        accounts_names = [i[0] for i in db.session.execute(db.select(Account.name).filter(Account.id.in_(accounts_ids)))]
+        amount_from = float(request.args['amount_from']) if request.args['amount_from'] != '' else float('-Inf')
+        amount_to = float(request.args['amount_to']) if request.args['amount_to'] != '' else float('Inf')
+        date_from = datetime.date.fromisoformat(request.args['date_from']) if request.args['date_from'] != '' else datetime.date(2000, 1, 1)
+        date_to = datetime.date.fromisoformat(request.args['date_to']) if request.args['date_to'] != '' else datetime.date.today()
+        notice = request.args.get('notice')
+        records = db.session.execute(db.select(model)
+                                     .filter(model.category_name.in_(categories_names))
+                                     .filter(model.account_name.in_(accounts_names))
+                                     .filter(model.amount.between(amount_from, amount_to))
+                                     .filter(model.date.between(date_from, date_to))
+                                     .order_by(db.desc(model.id)).limit(50)).scalars()
+    else:
+        records = db.session.execute(db.select(model).order_by(db.desc(model.id)).limit(50)).scalars()
     return render_template(template_name, elements=records, accounts=accounts, categories=categories, today=today)
 
 
@@ -115,7 +138,7 @@ def categories():
     if request.method == 'POST':
         if 'id' not in request.form:
             category = Category(
-                name=request.form['name'],
+                name=request.form['name'].lower(),
                 for_expenses='for_expenses' in request.form
             )
             try:
@@ -130,7 +153,7 @@ def categories():
         else:
             category = db.session.execute(db.select(Category).filter_by(id=int(request.form['id']))).scalar()
             category.for_expenses = 'for_expenses' in request.form
-            category.name = request.form['name']
+            category.name = request.form['name'].lower()
             try:
                 session.pop('_flashes', None)
                 db.session.commit()
@@ -148,7 +171,7 @@ def accounts():
     if request.method == 'POST':
         if 'id' not in request.form:
             account = Account(
-                name=request.form['name'],
+                name=request.form['name'].lower(),
                 balance=float(request.form['balance'])
             )
             try:
@@ -162,7 +185,7 @@ def accounts():
         else:
             account = db.session.execute(db.select(Account).filter_by(id=int(request.form['id']))).scalar()
             account.balance = float(request.form['balance'])
-            account.name = request.form['name']
+            account.name = request.form['name'].lower()
             try:
                 session.pop('_flashes', None)
                 db.session.commit()
@@ -186,3 +209,11 @@ def accounts():
     else:
         accounts = db.session.execute(db.select(Account)).scalars()
         return render_template('accounts.html', accounts=accounts)
+
+
+def login():
+    pass
+
+def register():
+    pass
+

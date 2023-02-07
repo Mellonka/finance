@@ -30,6 +30,131 @@ for (let checkbox of checkboxes) {
     }
 }
 
+// filter
+
+let category_general_checkbox = document.querySelector('label > input.category-general');
+let cat_checkboxes = document.querySelectorAll('label > input.category');
+
+category_general_checkbox.onchange = function () {
+    for (let checkbox of cat_checkboxes)
+        checkbox.checked = category_general_checkbox.checked;
+};
+
+for (let checkbox of cat_checkboxes) {
+    checkbox.onchange = function () {
+        if (!checkbox.checked)
+            category_general_checkbox.checked = false;
+    }
+}
+
+let account_general_checkbox = document.querySelector('label > input.account-general');
+let acc_checkboxes = document.querySelectorAll('label > input.account');
+
+account_general_checkbox.onchange = function () {
+    for (let checkbox of acc_checkboxes)
+        checkbox.checked = account_general_checkbox.checked;
+};
+
+for (let checkbox of acc_checkboxes) {
+    checkbox.onchange = function () {
+        if (!checkbox.checked)
+            account_general_checkbox.checked = false;
+    }
+}
+
+let filter_form = document.querySelector('form.filter');
+let filter_btn = document.querySelector('.btn.filter');
+let filter_hide_btn = document.querySelector('.btn.filter-hide');
+let search_btn = document.querySelector('.btn.search');
+
+filter_btn.onclick = function () {
+    search_btn.classList.remove('d-none');
+    filter_hide_btn.classList.remove('d-none');
+    filter_btn.classList.add('d-none');
+    filter_form.classList.remove('d-none');
+}
+
+filter_hide_btn.onclick = function () {
+    search_btn.classList.add('d-none');
+    filter_hide_btn.classList.add('d-none');
+    filter_btn.classList.remove('d-none');
+    filter_form.classList.add('d-none');
+}
+
+if (location.href.includes('&') && location.href.includes('?'))
+    filter_btn.click();
+
+search_btn.onclick = function () {
+    let general_category = filter_form.querySelector('input.hidden-input-category');
+    let categories = filter_form.querySelectorAll('label > input.category');
+    let cat_ids = [];
+    for (let category of categories) {
+        if (category.checked)
+            cat_ids.push(parseInt(category.value));
+    }
+    general_category.value = JSON.stringify(cat_ids);
+
+    let general_account = filter_form.querySelector('input.hidden-input-account');
+    let accounts = filter_form.querySelectorAll('label > input.account');
+    let acc_ids = [];
+    for (let account of accounts) {
+        if (account.checked)
+            acc_ids.push(parseInt(account.value));
+    }
+    general_account.value = JSON.stringify(acc_ids);
+
+    filter_form.submit();
+}
+
+
+
+/*
+search_btn.onclick = async function () {
+    let d = {}
+
+    d['categories'] = [];
+    for (let x of cat_checkboxes) {
+        if (x.checked)
+            d['categories'].push(x.dataset.id);
+    }
+
+    d['accounts'] = [];
+    for (let x of acc_checkboxes) {
+        if (x.checked)
+            d['accounts'].push(x.dataset.id);
+    }
+
+    let date_from = filter_form.querySelector('input.date-from').value;
+    let date_to = filter_form.querySelector('input.date-to').value;
+    if (date_from !== '')
+        d['date_from'] = date_from;
+    if (date_to.value !== '')
+        d['date_to'] = date_to;
+
+    let amount_from = filter_form.querySelector('input.amount-from').value;
+    let amount_to = filter_form.querySelector('input.amount-to').value;
+    if (amount_from !== '')
+        d['amount_from'] = amount_from;
+    if (amount_to.value !== '')
+        d['amount_to'] = amount_to;
+
+    let notice = filter_form.querySelector('textarea.notice').value;
+    if (notice !== '')
+        d['notice'] = notice;
+
+    await fetch(location.pathname, {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+            'Content-Type': 'text/json'
+        },
+        body: JSON.stringify(d)
+    });
+
+    location.reload();
+}
+*/
+
 // create-btn
 let tr_create = document.querySelector('tr.create');
 let create_btn = tr_create.querySelector('.btn.create');

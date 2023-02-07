@@ -2,11 +2,89 @@
 
 
 {% block content %}
-    <div class="d-flex controllers gap-3 mb-5">
+    <div class="d-flex controllers gap-3 mb-3">
         <button class="btn btn-primary mb-3 delete">Удалить выбранные записи</button>
+        <button class="btn btn-primary mb-3 filter">Фильтры</button>
+        <button class="btn btn-danger mb-3 filter-hide d-none">Cкрыть фильтры</button>
+        <button class="btn btn-success mb-3 search d-none">Поиск</button>
         <button class="btn btn-danger mb-3 cancel-update d-none">Отменить редактирование</button>
     </div>
+
+    <form method="get" class="d-flex gap-5 mb-5 flex-wrap filter d-none">
+{#        <form action="" method="get">#}
+            <div class="mx-2">
+                <p class="h3 mb-3 pe-4 ps-3">Категории</p>
+                <div class="border border-dark px-3 pe-5 pt-3 pb-2 fs-6 rounded">
+                    <label for="category" class="list-group-item d-flex gap-2">
+                        <input id="category" class="form-check-input flex-shrink-0 category-general" type="checkbox" checked>
+                        <span class="h6">Выбрать все</span>
+                    </label>
+                    <input type="text" name="categories" class="d-none hidden-input-category">
+                    {% for category in categories %}
+                        <label class="list-group-item d-flex gap-2 py-1">
+                            <input value="{{ category.Category.id }}" class="form-check-input flex-shrink-0 category"
+                                   type="checkbox" checked>
+                            <span>{{ category.Category.name|capitalize }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="mx-2">
+                <p class="h3 mb-3 pe-5 ps-3">Счета</p>
+                <div class="border border-dark px-3 pe-5 pt-3 pb-2 fs-6 rounded">
+                    <label class="list-group-item d-flex gap-2">
+                        <input class="form-check-input flex-shrink-0 account-general" type="checkbox" checked>
+                        <span class="h6">Выбрать все</span>
+                    </label>
+                    <input name="accounts" type="text" class="d-none hidden-input-account">
+                    {% for account in accounts %}
+                        <label class="list-group-item d-flex gap-2 py-1">
+                            <input value="{{ account.Account.id }}" class="account form-check-input flex-shrink-0"
+                                   type="checkbox" checked>
+                            <span>{{ account.Account.name|capitalize }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="mx-2">
+                <p class="h3 mb-3 ps-3">Дата</p>
+                <div class="border border-dark p-3 rounded">
+                    <label class="mb-4">
+                        <span class="h4">От:</span>
+                        <input name="date_from" type="date" class="form-control mt-2 date-from">
+                    </label><br>
+                    <label>
+                        <span class="h4">До:</span>
+                        <input name="date_to" type="date" value="{{ today.isoformat() }}" class="form-control mt-2 date-to">
+                    </label>
+                </div>
+            </div>
+            <div class="mx-2">
+                <p class="h3 mb-3 ps-3">Сумма</p>
+                <div class="border border-dark p-3 rounded">
+                    <label class="mb-4">
+                        <span class="h4">От:</span>
+                        <input type="text" name="amount_from" class="form-control mt-2 amount-from" autocomplete="off">
+                    </label><br>
+                    <label>
+                        <span class="h4">До:</span>
+                        <input name="amount_to" type="text" class="form-control mt-2 amount-to" autocomplete="off">
+                    </label>
+                </div>
+            </div>
+            <div>
+                <p class="h3 mb-3">Примечание</p>
+                <label for="notice">
+                <textarea id="notice" name="notice" placeholder="Поиск происходит по включению"
+                          class="form-control notice border-dark"></textarea>
+                </label>
+            </div>
+{#            <input type="submit" class="d-none">#}
+{#        </form>#}
+    </form>
+
     <div class="d-flex gap-4 justify-content-between">
+
 
         {#            <form method="post" class="list-group border p-4 w-50 create">#}
         {#                <h2 class="mb-3 text-center">Операция</h2>#}
@@ -42,7 +120,8 @@
         <table class="table table-striped">
             <thead>
             <tr class="align-middle">
-                <th style="width: 20px"><input style="width: 16px; height: 16px" type="checkbox"></th>
+                <th style="width: 20px"><input class="form-check-input border-dark" style="width: 16px; height: 16px"
+                                               type="checkbox"></th>
                 <th>№</th>
                 <th>Дата</th>
                 <th>Категория</th>
@@ -59,16 +138,16 @@
                 <td class="ps-0"><input type="date" name="date" id="date" class="form-control"
                                         value="{{ today.isoformat() }}"></td>
                 <td class="ps-0">
-                    <select required name="category" id="category" class="form-control">
+                    <select required name="category" id="category" class="form-control form-select">
                         {% for category in categories %}
-                            <option value="{{ category.Category.name }}">{{ category.Category.name }}</option>
+                            <option value="{{ category.Category.name|capitalize }}">{{ category.Category.name|capitalize }}</option>
                         {% endfor %}
                     </select>
                 </td>
                 <td class="ps-0">
-                    <select required name="account" id="account" class="form-control">
+                    <select required name="account" id="account" class="form-control form-select">
                         {% for account in accounts %}
-                            <option value="{{ account.Account.name }}">{{ account.Account.name }}</option>
+                            <option value="{{ account.Account.name|capitalize }}">{{ account.Account.name|capitalize }}</option>
                         {% endfor %}
                     </select>
                 </td>
@@ -79,22 +158,23 @@
                     <button class="btn btn-primary create"><b>+</b></button>
                 </td>
             </tr>
+
             <tr class="align-middle update">
                 <td></td>
                 <td class="id"><b></b></td>
-                <td class="ps-0"><input type="date" name="date" id="date" class="date form-control "
+                <td class="ps-0"><input type="date" name="date" id="date" class="date form-control"
                                         value="{{ today.isoformat() }}"></td>
                 <td class="ps-0">
-                    <select required name="category" id="category" class="category form-control ">
+                    <select required name="category" id="category" class="category form-control form-select">
                         {% for category in categories %}
-                            <option value="{{ category.Category.name }}">{{ category.Category.name }}</option>
+                            <option value="{{ category.Category.name|capitalize }}">{{ category.Category.name|capitalize }}</option>
                         {% endfor %}
                     </select>
                 </td>
                 <td class="ps-0">
-                    <select required name="account" id="account" class="account form-control">
+                    <select required name="account" id="account" class="account form-control form-select">
                         {% for account in accounts %}
-                            <option value="{{ account.Account.name }}">{{ account.Account.name }}</option>
+                            <option value="{{ account.Account.name|capitalize }}">{{ account.Account.name|capitalize }}</option>
                         {% endfor %}
                     </select>
                 </td>
@@ -107,14 +187,16 @@
                     <button class="btn update btn-success"><b>✓</b></button>
                 </td>
             </tr>
+
             {% for el in elements %}
                 <tr class="align-middle">
-                    <td class="checkbox"><input data-id="{{ el.id }}" style="width: 16px; height: 16px;"
-                                                       type="checkbox"></td>
+                    <td class="checkbox"><input class="form-check-input border-dark" data-id="{{ el.id }}"
+                                                style="width: 16px; height: 16px;"
+                                                type="checkbox"></td>
                     <td class="id record"><b>{{ el.id }}</b></td>
                     <td class="date record">{{ el.date.strftime('%d %B %Y') }}</td>
-                    <td class="category record">{{ el.category_name }}</td>
-                    <td class="account record">{{ el.account_name }}</td>
+                    <td class="category record">{{ el.category_name|capitalize }}</td>
+                    <td class="account record">{{ el.account_name|capitalize }}</td>
 
                     {% if el.sign == 1 %}
                         <td class="amount record" style="color: green">+{{ "{:.02f}".format(el.amount) }}</td>

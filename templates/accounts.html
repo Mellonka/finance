@@ -39,7 +39,7 @@
 {#                        <td class="checkbox"><input data-id="{{ el.id }}" style="width: 16px; height: 16px;"#}
 {#                                                    type="checkbox"></td>#}
                         <td class="id">{{ el.id }}</td>
-                        <td class="name">{{ el.name }}</td>
+                        <td class="name">{{ el.name|capitalize }}</td>
                         <td class="balance">{{ "{:.02f}".format(el.balance) }}</td>
                         <td class="p-0" style="width: 35px">
                             <button class="update btn p-0">
