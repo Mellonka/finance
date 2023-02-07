@@ -3,3 +3,4 @@ instance
 .idea
 __pycache__
 execute.bat
+setup.bat

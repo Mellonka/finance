@@ -41,14 +41,14 @@ def record_update(model):
     record = db.session.execute(db.select(model).filter_by(id=data['id'])).scalar()
 
     amount = float(data['amount'])
+    record.account.balance -= record.amount * model.sign
     if record.account.name != data['account']:
-        record.account.balance -= record.amount * model.sign
         account = db.session.execute(db.select(Account).filter_by(name=data['account'])).scalar()
-        account.balance += amount * model.sign
         record.account = account
     if record.category.name != data['category']:
         category = db.session.execute(db.select(Category).filter_by(name=data['category'])).scalar()
         record.category = category
+    record.account.balance += amount * model.sign
     date = datetime.date.fromisoformat(data['date'])
     record.date = date
     record.amount = amount
