@@ -106,7 +106,9 @@ def record_get(model, template_name):
                                      .order_by(db.desc(model.id)).limit(50)).scalars()
     else:
         records = db.session.execute(db.select(model).order_by(db.desc(model.id)).limit(50)).scalars()
-    return render_template(template_name, elements=records, accounts=accounts, categories=categories, today=today)
+
+    amount_sum = sum(i[0] for i in db.session.execute(db.select(model.amount).filter(model.date.between(datetime.date(today.year, today.month, 1), datetime.date(today.year, today.month + 1, 1) - datetime.timedelta(1)))))
+    return render_template(template_name, elements=records, accounts=accounts, categories=categories, today=today, amount_sum=amount_sum)
 
 
 @app.route('/expense', methods=['POST', 'GET', 'DELETE', 'UPDATE'])
