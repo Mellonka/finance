@@ -1,9 +1,6 @@
 {% extends 'base-operation.html' %}
 
 
-{% block title  %}Доходы{% endblock %}
+{% block title %}Доходы{% endblock %}
 {% block lead_text %}Здесь вы можете следить за своими доходами.{% endblock %}
-
-{% block turnover %}
-        <p class="ms-auto me-5 fs-5">Заработали за этот месяц: <b>{{ "{:.02f}".format(amount_sum) }}</b></p>
-{% endblock %}
+{% block turnover %}Заработали{% endblock %}

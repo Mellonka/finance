@@ -12,7 +12,6 @@ def main_page():
 
 def record_post(model):
     data = json.loads(request.data.decode())
-
     category = db.session.execute(db.select(Category).filter_by(name=data['category'].lower())).scalar()
     account = db.session.execute(db.select(Account).filter_by(name=data['account'].lower())).scalar()
     amount = float(data['amount'])
@@ -22,7 +21,7 @@ def record_post(model):
         amount=amount,
         category=category,
         account=account,
-        notice=data['notice']
+        notice=data['notice'].lower()
     )
     try:
         session.pop('_flashes', None)
@@ -52,7 +51,7 @@ def record_update(model):
     date = datetime.date.fromisoformat(data['date'])
     record.date = date
     record.amount = amount
-    record.notice = data['notice']
+    record.notice = data['notice'].lower()
     try:
         session.pop('_flashes', None)
         db.session.commit()
@@ -84,31 +83,62 @@ def record_delete(model):
     return ''
 
 
+def get_statistics(model, column, filter, date_from, date_to):
+    return db.session.execute(db.select(column, db.func.sum(model.amount)).filter(column.in_(filter)).filter(
+        model.date.between(date_from, date_to)).group_by(column)).all()
+
+
+
 def record_get(model, template_name):
     categories = db.session.execute(db.select(Category).filter_by(for_expenses=bool(model.sign - 1))).all()
     accounts = db.session.execute(db.select(Account)).all()
     today = datetime.date.today()
+    start_month = datetime.date(today.year, today.month, 1)
+    end_month = datetime.date(today.year, today.month + 1, 1) - datetime.timedelta(1)
     if 'categories' in request.args:
-        categories_ids = json.loads(request.args['categories'])
-        categories_names = [i[0] for i in db.session.execute(db.select(Category.name).filter(Category.id.in_(categories_ids)))]
-        accounts_ids = json.loads(request.args['accounts'])
-        accounts_names = [i[0] for i in db.session.execute(db.select(Account.name).filter(Account.id.in_(accounts_ids)))]
-        amount_from = float(request.args['amount_from']) if request.args['amount_from'] != '' else float('-Inf')
-        amount_to = float(request.args['amount_to']) if request.args['amount_to'] != '' else float('Inf')
-        date_from = datetime.date.fromisoformat(request.args['date_from']) if request.args['date_from'] != '' else datetime.date(2000, 1, 1)
-        date_to = datetime.date.fromisoformat(request.args['date_to']) if request.args['date_to'] != '' else datetime.date.today()
-        notice = request.args.get('notice')
-        records = db.session.execute(db.select(model)
-                                     .filter(model.category_name.in_(categories_names))
-                                     .filter(model.account_name.in_(accounts_names))
-                                     .filter(model.amount.between(amount_from, amount_to))
-                                     .filter(model.date.between(date_from, date_to))
-                                     .order_by(db.desc(model.id)).limit(50)).scalars()
-    else:
-        records = db.session.execute(db.select(model).order_by(db.desc(model.id)).limit(50)).scalars()
+        categories_ids = json.loads(request.args.get('categories'))
+        categories_names = [i[0] for i in
+                            db.session.execute(db.select(Category.name).filter(Category.id.in_(categories_ids)))]
+    else: # если изменить категорию то в записях оно не меняется (хз почему),
+        # поэтому все записи со старыми названиями категорий не будут отображаться - надо исправить
+        categories_names = [i.Category.name for i in categories]
 
-    amount_sum = sum(i[0] for i in db.session.execute(db.select(model.amount).filter(model.date.between(datetime.date(today.year, today.month, 1), datetime.date(today.year, today.month + 1, 1) - datetime.timedelta(1)))))
-    return render_template(template_name, elements=records, accounts=accounts, categories=categories, today=today, amount_sum=amount_sum)
+    if 'accounts' in request.args:
+        accounts_ids = json.loads(request.args.get('accounts'))
+        accounts_names = [i[0] for i in
+                          db.session.execute(db.select(Account.name).filter(Account.id.in_(accounts_ids)))]
+    else: # тоже самое что писал в категориях
+        accounts_names = [i.Account.name for i in accounts]
+
+    amount_from = float(request.args['amount_from']) if request.args.get('amount_from', '') != '' else float('-Inf')
+    amount_to = float(request.args['amount_to']) if request.args.get('amount_to', '') != '' else float('Inf')
+    date_from = datetime.date.fromisoformat(request.args['date_from']) if request.args.get('date_from',
+                                                                                           '') != '' else start_month
+
+    date_to = datetime.date.fromisoformat(request.args['date_to']) if request.args.get('date_to', '') != '' else today
+    notice = request.args.get('notice', '').lower()
+    records = db.session.execute(db.select(model)
+                                 .filter(model.category_name.in_(categories_names))
+                                 .filter(model.account_name.in_(accounts_names))
+                                 .filter(model.amount.between(amount_from, amount_to))
+                                 .filter(model.date.between(date_from, date_to))
+                                 .filter(model.notice.like(f'%{notice}%'))
+                                 .order_by(db.desc(model.id)).limit(50)).scalars()
+    amount_sum = sum(
+        i[0] for i in db.session.execute(db.select(model.amount).filter(model.date.between(start_month, end_month))))
+    statistics_categories = get_statistics(model, model.category_name, categories_names, date_from, date_to)
+    sum_categories = 0
+    for _, val in statistics_categories:
+        sum_categories += val
+
+    statistics_accounts = get_statistics(model, model.account_name, accounts_names, date_from, date_to)
+    sum_accounts = 0
+    for _, val in statistics_accounts:
+        sum_accounts += val
+
+    return render_template(template_name, elements=records, accounts=accounts, categories=categories, today=today,
+                           amount_sum=amount_sum, cat_statistics=statistics_categories, sum_cat=sum_categories,
+                           acc_statistics=statistics_accounts, sum_acc=sum_accounts)
 
 
 @app.route('/expense', methods=['POST', 'GET', 'DELETE', 'UPDATE'])
@@ -206,16 +236,19 @@ def accounts():
             flash('Все записи успешно удалены!', 'success')
         except Exception as e:
             print(e)
-            flash('Ошибка при удалении! Возможно существуют записи ссылающиеся на этот счёт. Советуем диактивировать счёт.', 'error')
+            flash(
+                'Ошибка при удалении! Возможно существуют записи ссылающиеся на этот счёт. Советуем диактивировать счёт.',
+                'error')
         return ''
     else:
         accounts = db.session.execute(db.select(Account)).scalars()
-        return render_template('accounts.html', accounts=accounts)
+        sum_accounts = db.session.execute(db.func.sum(Account.balance)).first()[0]
+        return render_template('accounts.html', accounts=accounts, sum_accounts=sum_accounts)
 
 
 def login():
     pass
 
+
 def register():
     pass
-

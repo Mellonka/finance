@@ -2,7 +2,9 @@
 
 
 {% block title %}Счета{% endblock %}
-{% block lead_text %}Интерфейс для работы со счетами{% endblock %}
+{% block lead_text %}
+    Интерфейс для работы со счетами
+{% endblock %}
 
 
 
@@ -21,6 +23,7 @@
 
         <button class="btn btn-danger mb-3 cancel-update d-none">Отменить редактирование</button>
     </div>
+    <p class="text-center fs-4 mb-5 d-block">Всего денег: <b>{{ "{:.02f}".format(sum_accounts) }}</b></p>
     <div class="d-flex flex-wrap justify-content-center mb-5" style="gap: 80px !important;">
         <div style="min-width: 400px !important;">
             <table class="table table-striped">
@@ -38,7 +41,7 @@
                     <tr class="align-middle">
 {#                        <td class="checkbox"><input data-id="{{ el.id }}" style="width: 16px; height: 16px;"#}
 {#                                                    type="checkbox"></td>#}
-                        <td class="id">{{ el.id }}</td>
+                        <td class="id"><b>{{ el.id }}</b></td>
                         <td class="name">{{ el.name|capitalize }}</td>
                         <td class="balance">{{ "{:.02f}".format(el.balance) }}</td>
                         <td class="p-0" style="width: 35px">

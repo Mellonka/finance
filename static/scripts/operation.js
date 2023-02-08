@@ -265,14 +265,33 @@ tr_update.querySelector('button.update').onclick = async function () {
     location.reload();
 };
 
+let analysis_btn = document.querySelector('.btn.analysis');
+let analysis_div = document.querySelector('div.analysis');
+
+analysis_btn.onclick = function () {
+    if (analysis_btn.textContent === 'Аналитика'){
+        analysis_div.classList.remove('d-none');
+        analysis_btn.textContent = 'Скрыть аналитику';
+        analysis_btn.classList.remove('btn-primary');
+        analysis_btn.classList.add('btn-danger');
+    }
+    else {
+        analysis_div.classList.add('d-none');
+        analysis_btn.textContent = 'Аналитика';
+        analysis_btn.classList.add('btn-primary');
+        analysis_btn.classList.remove('btn-danger');
+    }
+
+}
+
 
 // last_id
 
-let e = document.querySelector('td.checkbox > input');
-let last_id = 0;
-if (e !== null)
-    last_id = e.dataset.id;
-document.querySelector('td > b').textContent = parseInt(last_id) + 1;
+// let e = document.querySelector('td.checkbox > input');
+// let last_id = 0;
+// if (e !== null)
+//     last_id = e.dataset.id;
+// document.querySelector('td > b').textContent = parseInt(last_id) + 1;
 
 // form-controls
 

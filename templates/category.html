@@ -19,7 +19,7 @@
 
         <button class="btn btn-danger mb-3 cancel-update d-none">Отменить редактирование</button>
     </div>
-    <div class="d-flex flex-wrap justify-content-center my-5" style="gap: 80px !important;">
+    <div class="d-flex flex-wrap justify-content-center my-5 align-items-start" style="gap: 80px !important;">
         <div style="min-width: 400px !important;">
             <table class="table table-striped">
                 <thead>
@@ -36,7 +36,7 @@
                     <tr class="align-middle">
 {#                        <td class="checkbox"><input data-id="{{ el.id }}" style="width: 16px; height: 16px;"#}
 {#                                                    type="checkbox"></td>#}
-                        <td class="id">{{ el.id }}</td>
+                        <td class="id"><b>{{ el.id }}</b></td>
                         <td class="name">{{ el.name|capitalize }}</td>
                         {% if el.for_expenses %}
                             <td class="for-expenses">Да</td>

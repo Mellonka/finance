@@ -2,17 +2,22 @@
 
 
 {% block content %}
-    <div class="d-flex controllers gap-3 mb-3">
+    <div class="d-flex flex-wrap controllers gap-3 mb-3">
         <button class="btn btn-primary mb-3 delete">Удалить выбранные записи</button>
         <button class="btn btn-primary mb-3 filter">Фильтры</button>
+
         <button class="btn btn-danger mb-3 filter-hide d-none">Cкрыть фильтры</button>
         <button class="btn btn-success mb-3 search d-none">Поиск</button>
+        <button class="btn btn-primary mb-3 analysis">Аналитика</button>
         <button class="btn btn-danger mb-3 cancel-update d-none">Отменить редактирование</button>
-        {% block turnover %}{% endblock %}
+
     </div>
 
-    <form method="get" class="d-flex gap-5 mb-5 flex-wrap filter d-none">
+
+
+    <form method="get" class="d-flex gap-5 mb-5 pb-4 flex-wrap filter border-bottom d-none">
         {#        <form action="" method="get">#}
+
         <div class="mx-2">
             <p class="h3 mb-3 pe-4 ps-3">Категории</p>
             <div class="border border-dark px-3 pe-5 pt-3 pb-2 fs-6 rounded">
@@ -85,6 +90,27 @@
         {#        </form>#}
     </form>
 
+    <div class="analysis mb-5 pb-2 d-none">
+        <div class="d-flex gap-5 align-items-start">
+            <div class="border rounded bg-warning bg-gradient px-5 py-3">
+                <h3 class="">По категориям</h3>
+                {% for name, sum in cat_statistics %}
+                    <p class="fs-5 lh-1">{{ name|capitalize }}: <b>{{ "{:.02f}".format(sum) }}</b></p>
+                {% endfor %}
+                <p class=" fs-5 lh-1"><b>Всего: {{ "{:.02f}".format(sum_cat) }}</b></p>
+            </div>
+            <div class="border rounded bg-warning bg-gradient px-5 py-3">
+                <h3 class="">По счетам</h3>
+                {% for name, sum in acc_statistics %}
+                    <p class="fs-5 lh-1 ">{{ name|capitalize }}: <b>{{ "{:.02f}".format(sum) }}</b></p>
+                {% endfor %}
+                <p class="fs-5 lh-1"><b>Всего: {{ "{:.02f}".format(sum_acc) }}</b></p>
+            </div>
+        </div>
+    </div>
+
+    <p class="text-end me-5 fs-4 ">{% block turnover %}{% endblock %} за этот месяц:
+        <b>{{ "{:.02f}".format(amount_sum) }}</b></p>
     <div class="d-flex gap-4 justify-content-between">
 
 
@@ -118,6 +144,7 @@
         {#<button class="btn btn-success sub">Добавить</button>#}
         {#                <input type="submit" class="btn btn-success submit" value="Добавить">#}
         {#            </form>#}
+
 
         <table class="table table-striped">
             <thead>
@@ -217,7 +244,6 @@
                 </tbody>
             {% endfor %}
         </table>
-    </div>
     </div>
 
     <script src="{{ url_for('static', filename='scripts/operation.js') }}"></script>
