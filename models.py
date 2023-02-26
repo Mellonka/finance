@@ -1,5 +1,19 @@
-from app import db, app
+from app import db
 import datetime
+
+
+class Transfer(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.Date, default=datetime.date.today)
+    amount = db.Column(db.Float, nullable=False)
+    notice = db.Column(db.String(300), nullable=True)
+
+    account_from = db.Column(db.String, db.ForeignKey('account.name'), nullable=False)
+    account_from_ = db.relationship('Account', foreign_keys=[account_from])
+
+    account_to = db.Column(db.String, db.ForeignKey('account.name'), nullable=False)
+    account_to_ = db.relationship('Account', foreign_keys=[account_to])
+
 
 
 class Expense(db.Model):
@@ -39,6 +53,7 @@ class Account(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
     balance = db.Column(db.Float, default=0)
+
     #
     # user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     # user = db.relationship('User', backref=db.backref('accounts', lazy=True))
@@ -66,7 +81,6 @@ class Income(db.Model):
 
     def __repr__(self):
         return '<Income %r>' % self.id
-
 
 # class User(db.Model):
 #     id = db.Column(db.Integer, primary_key=True)

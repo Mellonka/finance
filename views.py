@@ -1,5 +1,5 @@
 from app import app, db
-from models import Expense, Category, Account, Income
+from models import Expense, Category, Account, Income, Transfer
 from flask import request, redirect, flash, render_template, session
 import datetime
 import json
@@ -88,7 +88,6 @@ def get_statistics(model, column, filter, date_from, date_to):
         model.date.between(date_from, date_to)).group_by(column)).all()
 
 
-
 def record_get(model, template_name):
     categories = db.session.execute(db.select(Category).filter_by(for_expenses=bool(model.sign - 1))).all()
     accounts = db.session.execute(db.select(Account)).all()
@@ -99,7 +98,7 @@ def record_get(model, template_name):
         categories_ids = json.loads(request.args.get('categories'))
         categories_names = [i[0] for i in
                             db.session.execute(db.select(Category.name).filter(Category.id.in_(categories_ids)))]
-    else: # если изменить категорию то в записях оно не меняется (хз почему),
+    else:  # если изменить категорию то в записях оно не меняется (хз почему),
         # поэтому все записи со старыми названиями категорий не будут отображаться - надо исправить
         categories_names = [i.Category.name for i in categories]
 
@@ -107,7 +106,7 @@ def record_get(model, template_name):
         accounts_ids = json.loads(request.args.get('accounts'))
         accounts_names = [i[0] for i in
                           db.session.execute(db.select(Account.name).filter(Account.id.in_(accounts_ids)))]
-    else: # тоже самое что писал в категориях
+    else:  # тоже самое что писал в категориях
         accounts_names = [i.Account.name for i in accounts]
 
     amount_from = float(request.args['amount_from']) if request.args.get('amount_from', '') != '' else float('-Inf')
@@ -198,10 +197,10 @@ def categories():
         return render_template('category.html', categories=categories)
 
 
-@app.route('/accounts', methods=['POST', 'GET'])
+@app.route('/accounts', methods=['POST', 'GET', 'DELETE'])
 def accounts():
     if request.method == 'POST':
-        if 'id' not in request.form:
+        if 'id' not in request.form and 'account_from' not in request.form:
             account = Account(
                 name=request.form['name'].lower(),
                 balance=float(request.form['balance'])
@@ -213,6 +212,34 @@ def accounts():
                 flash('Успешно добавлено!', 'success')
             except:
                 flash('Ошибка при добавлении счёта!', 'error')
+            return redirect('/accounts')
+        elif 'account_from' in request.form:
+            account_from = \
+            db.session.execute(db.select(Account).filter_by(name=request.form['account_from'].lower())).first()[0]
+            account_to = \
+            db.session.execute(db.select(Account).filter_by(name=request.form['account_to'].lower())).first()[0]
+
+            amount = float(request.form['amount'])
+            account_from.balance -= amount
+            account_to.balance += amount
+            notice = request.form['notice']
+            date = datetime.date.fromisoformat(request.form['date'])
+            transfer = Transfer(
+                amount=amount,
+                account_to_=account_to,
+                account_from_=account_from,
+                notice=notice,
+                date=date
+            )
+            try:
+                if account_to.name == account_from.name:
+                    raise Exception()
+                session.pop('_flashes', None)
+                db.session.add(transfer)
+                db.session.commit()
+                flash('Переведено успешно!', 'success')
+            except:
+                flash('Ошибка при переводе!', 'error')
             return redirect('/accounts')
         else:
             account = db.session.execute(db.select(Account).filter_by(id=int(request.form['id']))).scalar()
@@ -229,21 +256,27 @@ def accounts():
         ids = list(map(int, json.loads(request.data.decode())['ids']))
         try:
             session.pop('_flashes', None)
-            accounts = db.session.execute(db.select(Account).filter(Account.id.in_(ids))).scalars()
-            for account in accounts:
-                db.session.delete(account.Account)
+            transfers = db.session.execute(db.select(Transfer).filter(Transfer.id.in_(ids))).scalars()
+            for transfer in transfers:
+                account_from = transfer.account_from_
+                account_to = transfer.account_to_
+                account_to.balance -= transfer.amount
+                account_from.balance += transfer.amount
+                db.session.delete(transfer)
             db.session.commit()
-            flash('Все записи успешно удалены!', 'success')
+            flash('Все переводы успешно удалены!', 'success')
         except Exception as e:
             print(e)
             flash(
-                'Ошибка при удалении! Возможно существуют записи ссылающиеся на этот счёт. Советуем диактивировать счёт.',
+                'Ошибка при удалении!',
                 'error')
         return ''
     else:
-        accounts = db.session.execute(db.select(Account)).scalars()
+        accounts = db.session.execute(db.select(Account)).all()
         sum_accounts = db.session.execute(db.func.sum(Account.balance)).first()[0]
-        return render_template('accounts.html', accounts=accounts, sum_accounts=sum_accounts)
+        today = datetime.date.today()
+        transfers = db.session.execute(db.select(Transfer).order_by(db.desc(Transfer.id)).limit(50)).scalars()
+        return render_template('accounts.html', transfers=transfers, accounts=accounts, today=today, sum_accounts=sum_accounts)
 
 
 def login():

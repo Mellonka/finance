@@ -3,6 +3,7 @@
 let create_form = document.querySelector('form.create');
 let update_form = document.querySelector('form.update');
 let cancel_update_btn = document.querySelector('button.cancel-update');
+let delete_transfers = document.querySelector('button.delete-transfers')
 
 let update_btns = document.querySelectorAll('button.update');
 for (let update_btn of update_btns) {
@@ -28,41 +29,62 @@ cancel_update_btn.onclick = function () {
     cancel_update_btn.classList.add('d-none');
 }
 
+let transfer_btn = document.querySelector('.btn.transfer');
+let transfer_form = document.querySelector('div.transfer');
 
-// let checkboxes = document.querySelectorAll('td.checkbox > input');
-// let general_checkbox = document.querySelector('th > input');
-//
-// general_checkbox.onclick = function () {
-//     for (let checkbox of checkboxes) {
-//         checkbox.checked = general_checkbox.checked;
-//     }
-// }
-//
-// for (let checkbox of checkboxes) {
-//     checkbox.onclick = function () {
-//         if (!checkbox.checked)
-//             general_checkbox.checked = false;
-//     }
-// }
-//
-// let delete_btn = document.querySelector('.btn.delete');
-//
-// delete_btn.onclick = async function () {
-//     let ids = [];
-//     for (let checkbox of checkboxes)
-//         if (checkbox.checked)
-//             ids.push(checkbox.dataset.id);
-//
-//
-//     await fetch(document.location.pathname, {
-//         method: 'DELETE',
-//         mode: 'cors',
-//         headers: {
-//             'Content-Type': 'text/json'
-//         },
-//         body: JSON.stringify({'ids': ids})
-//     });
-//
-//     location.reload();
-// }
+transfer_btn.onclick = function () {
+    if (transfer_btn.textContent === 'Перевод'){
+        transfer_form.classList.remove('d-none');
+        transfer_btn.textContent = 'Отмена перевода';
+        transfer_btn.classList.remove('btn-success');
+        transfer_btn.classList.add('btn-danger');
+        delete_transfers.classList.remove('d-none');
+    }
+    else {
+        transfer_form.classList.add('d-none');
+        transfer_btn.textContent = 'Перевод';
+        transfer_btn.classList.add('btn-success');
+        transfer_btn.classList.remove('btn-danger');
+        delete_transfers.classList.add('d-none');
+    }
+}
+
+let transfer_create_btn = document.querySelector('.btn.create');
+
+
+let checkboxes = document.querySelectorAll('td.checkbox > input');
+let general_checkbox = document.querySelector('th > input');
+
+general_checkbox.onclick = function () {
+    for (let checkbox of checkboxes) {
+        checkbox.checked = general_checkbox.checked;
+    }
+}
+
+for (let checkbox of checkboxes) {
+    checkbox.onclick = function () {
+        if (!checkbox.checked)
+            general_checkbox.checked = false;
+    }
+}
+
+
+delete_transfers.onclick = async function () {
+    let ids = [];
+    for (let checkbox of checkboxes)
+        if (checkbox.checked)
+            ids.push(checkbox.dataset.id);
+
+
+    await fetch(document.location.pathname, {
+        method: 'DELETE',
+        mode: 'cors',
+        headers: {
+            'Content-Type': 'text/json'
+        },
+        body: JSON.stringify({'ids': ids})
+    });
+
+    location.reload();
+}
 
